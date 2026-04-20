@@ -23,7 +23,9 @@ from utils.devices import format_label, get_shadowcast_device, list_formats
 from utils.virtualcam import VirtualCamPublisher
 
 
-_DEFAULT_SAVES_DIR = Path.home() / "Videos" / "Castki"
+_DEFAULT_SAVES_DIR  = Path.home() / "Videos" / "Castki"
+_DEFAULT_FORMAT     = "1920x1080 @ 60fps"
+_DEFAULT_VOLUME     = 80
 
 BAR_TOP      = "#464646"
 BAR_BG       = "#3d3d3d"
@@ -301,7 +303,7 @@ class MainWindow(QMainWindow):
         bl.addWidget(_icon_label("◗", 16))
         self._vol_slider = QSlider(Qt.Orientation.Horizontal)
         self._vol_slider.setRange(0, 100)
-        saved_vol = int(self._settings.value("volume", 80))
+        saved_vol = int(self._settings.value("volume", _DEFAULT_VOLUME))
         self._vol_slider.setValue(saved_vol)
         self._vol_slider.setFixedWidth(100)
         self._vol_slider.setEnabled(self._audio.available)
@@ -397,7 +399,9 @@ class MainWindow(QMainWindow):
             self._format_combo.addItem(format_label(fmt))
 
         saved_fmt = self._settings.value("format", "")
-        idx = self._format_combo.findText(saved_fmt)
+        idx = self._format_combo.findText(saved_fmt) if saved_fmt else -1
+        if idx < 0:
+            idx = self._format_combo.findText(_DEFAULT_FORMAT)
         self._format_combo.setCurrentIndex(idx if idx >= 0 else 0)
         self._format_combo.blockSignals(False)
 
@@ -439,9 +443,13 @@ class MainWindow(QMainWindow):
     # ── Settings ──────────────────────────────────────────────────────
 
     def _open_settings(self) -> None:
-        dlg = SettingsDialog(self._saves_dir, self)
+        dlg = SettingsDialog(self._saves_dir, _DEFAULT_SAVES_DIR, self)
         if dlg.exec():
             self._saves_dir = dlg.saves_dir
+            if dlg.reset_all:
+                self._vol_slider.setValue(_DEFAULT_VOLUME)
+                idx = self._format_combo.findText(_DEFAULT_FORMAT)
+                self._format_combo.setCurrentIndex(idx if idx >= 0 else 0)
 
     # ── Virtual camera ────────────────────────────────────────────────
 

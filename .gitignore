@@ -12,6 +12,10 @@ venv/
 .venv/
 env/
 
+# Source assets (binary, not needed in repo)
+*.psd
+CastKi/CastKiLogo.ico
+
 # Screenshots / temp
 screens/
 
